@@ -55,8 +55,8 @@ ROOT_URLCONF = 'mysite.urls'  # 최우선으로 찾아볼 urls.py 파일의 위�
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [BASE_DIR / 'templates'],  # django가 탬플릿을 찾을 때 탐색하는 디렉토리 리스트 
+        'APP_DIRS': True,  # 이게 True라면 django는 등록된 어플리케이션 안에서 templates 폴더를 찾아 거기에서 파일을 서빙함. 
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
