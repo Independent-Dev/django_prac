@@ -31,7 +31,7 @@ class SnippetViewSet(viewsets.ModelViewSet):
                           IsOwnerOrReadOnly]
 
     @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
-    def highlight(self, request, *args, **kwargs):
+    def highlight(self, request, *args, **kwargs):  # 여기서 함수명은 serializers.py에 선언된 view_name과 연결되고 이게 결국 urls와 이어짐.
         snippet = self.get_object()
         return Response(snippet.highlighted)
 
