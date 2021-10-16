@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Main
+{% endblock %}
+
+{% block script %}
+<script>
+    $(document).ready(function() {
+        $("#upload_form").submit(function(event){
+            event.preventDefault();
+            
+            data = new FormData();
+            data.append("csrf_token", $('input[name="csrf_token"]').val());
+            data.append("user_email", $('input[name="user_email"]').val());
+            data.append("file", $("input[name=file]")[0].files[0]);
+        
+            $.ajax({
+            url: "{# {{ url_for('data.file') }} #}",
+            type: 'POST',
+            data: data,
+            enctype: 'multipart/form-data',
+            contentType: false,
+            processData: false,
+            success: function(r){
+                r = $.parseJSON(r)
+                alert(r.message);
+                location.reload();
+            },
+            error: function(response){
+                response = $.parseJSON(response.responseText)
+
+                error_message_array = Object.values($.parseJSON(response.message))
+
+                $.each(error_message_array, function(idx, items){
+                    alert(items);
+                })
+            }
+            })
+        });
+
+        $('#cache_update_button').click(function(){
+            $.post("{# {{ url_for('data.redis_cache_update') }} #}", function(response){
+                response_json = $.parseJSON(response)
+                alert(response_json.message)
+            }).fail(function(response){
+                response_json = $.parseJSON(response.responseText)
+                alert(response_json.message)
+                location.reload()
+            })
+            
+            // TODO 나중엔 이게 자동으로 닫히도록 손을 보고 싶다...
+            alert('조금 시간이 걸릴 수 있습니다. 잠시만 기다려주세요:)');
+        })
+    });
+</script>
+
+{% endblock %}
+
+{% block card_title %}Main{% endblock %}
+
+{% block link %}
+    {% if not request.user.is_authenticated %}
+        <a href="{% url 'register' %}" class="mdl-button mdl-button--raised mdl-button--colored" style="float: right; margin-left: 20px;">회원가입</a>
+        <a href="{% url 'login' %}" class="mdl-button mdl-button--raised mdl-button--colored" style="float: right;">로그인</a>
+    {% else %}
+        <button id="cache_update_button" title="Redis에 저장된 패키지 데이터 갱신" class="mdl-button mdl-button--raised mdl-button--colored" style="float: right; margin-left: 20px;">데이터 캐시 갱신</button>
+        <a href="{% url 'logout' %}" class="mdl-button mdl-button--raised mdl-button--colored" style="float: right;">로그아웃</a>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<form method="post" id="upload_form" enctype="multipart/form-data">
+    <div class="mdl-card__supporting-text">
+        {% csrf_token %}
+        {{ form.user_email }}
+        {{ form.file }}
+        {% comment %}
+            {% if not request.user.is_authenticated %}
+                {{ render_text_field(form.user_email, minlength=4, maxlength=20, autocomplete='off', required=true, type='email') | indent(24)}}
+            {% else %}
+                {{ form.user_email(class='mdl-textfield__input', minlength=4, maxlength=20, autocomplete='off', required=true, type='hidden', value=current_user.user_email) }}
+            {% endif %}
+        
+        <div style="width:100%;" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        {{ form.file(class='mdl-textfield__input', title="requirement.txt를 업로드해주세요!") }}
+        </div>
+        {% endcomment %}
+    </div>
+    <div class="mdl-card__actions mdl-card--border">
+        <div class="mdl-grid">
+            <input type="submit" value="requirements.txt 파일 upload" class="mdl-cell mdl-cell--12-col mdl-button mdl-button--raised mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--white" style="background-color: FFAB40;"></input>
+        </div>
+    </div>
+</form>
+{% endblock %}
