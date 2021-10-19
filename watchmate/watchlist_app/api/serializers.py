@@ -6,7 +6,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = "__all__"
+        exclude = ('watchlist',)  # 넘길 때 watchlist 정수값을 넘기고 싶지 않다면 이것을 넣어야 함. 
+        # fields = "__all__"
 
 class WatchListSerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)

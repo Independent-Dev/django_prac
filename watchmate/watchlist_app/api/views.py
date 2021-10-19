@@ -5,9 +5,32 @@ from rest_framework.decorators import api_view
 from watchlist_app.models import WatchList, StreamPlatform, Review
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlatformSerializer, ReviewSerializer
 
-class ReviewList(generics.ListCreateAPIView):
-    queryset = Review.objects.all()
+
+class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+
+    # 이것 이외에도 perform_update, perform_destroy도 존재함
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        watchlist = WatchList.objects.get(pk=pk)
+
+        serializer.save(watchlist=watchlist)
+
+class ReviewList(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    # queryset 어트리뷰트를 오버라이딩 한다고 생각할 수 있음.
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Review.objects.filter(watchlist=pk)
+    
+    # ListAPIView 대신 ListCreateAPIView를 상속하고 아래 메소드를 추가하면 ReviewCreate는 불필요
+    # def perform_create(self, serializer):
+    #     pk = self.kwargs.get('pk')
+    #     watchlist = WatchList.objects.get(pk=pk)
+
+    #     serializer.save(watchlist=watchlist)
+        
 
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
