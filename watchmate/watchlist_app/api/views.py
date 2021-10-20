@@ -4,19 +4,29 @@ from rest_framework import status, generics, mixins, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
 from watchlist_app.models import WatchList, StreamPlatform, Review
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlatformSerializer, ReviewSerializer
 
 
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    queryset = Review.objects.all()
 
     # 이것 이외에도 perform_update, perform_destroy도 존재함
     def perform_create(self, serializer):
+        print(self.request.user)
+
         pk = self.kwargs.get('pk')
         watchlist = WatchList.objects.get(pk=pk)
 
-        serializer.save(watchlist=watchlist)
+        review_user = self.request.user
+        review_queryset = Review.objects.filter(watchlist=watchlist, review_user=review_user)
+
+        if review_queryset.exists():
+            raise ValidationError('you have already reviewed this movie!')
+
+        serializer.save(watchlist=watchlist, review_user=review_user)
 
 class ReviewList(generics.ListAPIView):
     serializer_class = ReviewSerializer
@@ -25,36 +35,11 @@ class ReviewList(generics.ListAPIView):
     def get_queryset(self):
         pk = self.kwargs['pk']
         return Review.objects.filter(watchlist=pk)
-    
-    # ListAPIView 대신 ListCreateAPIView를 상속하고 아래 메소드를 추가하면 ReviewCreate는 불필요
-    # def perform_create(self, serializer):
-    #     pk = self.kwargs.get('pk')
-    #     watchlist = WatchList.objects.get(pk=pk)
-
-    #     serializer.save(watchlist=watchlist)
         
 
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-
-
-# class ReviewDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
-#     queryset = Review.objects.all()
-#     serializer_class = ReviewSerializer
-
-#     def get(self, request, *args, **kwargs):
-#         return self.retrieve(request, *args, **kwargs)
-
-# class ReviewList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
-#     queryset = Review.objects.all()
-#     serializer_class = ReviewSerializer
-
-#     def get(self, request, *args, **kwargs):
-#         return self.list(request, *args, **kwargs)
-
-#     def post(self, request, *args, **kwargs):
-#         return self.create(request, *args, **kwargs)
 
 class StreamPlatformVS(viewsets.ViewSet):
 

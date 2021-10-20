@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import User
 
 class StreamPlatform(models.Model):
     name = models.CharField(max_length=30)
@@ -22,6 +23,7 @@ class WatchList(models.Model):
 
 
 class Review(models.Model):
+    review_user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])  # 이걸 lambda로 처리할 수는 없는 것인가. lambda x: 1<=x<=5와 같은 식으로. 
     description = models.CharField(max_length=200, null=True)
     watchlist = models.ForeignKey(WatchList, on_delete=models.CASCADE, related_name="reviews")
