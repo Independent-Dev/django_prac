@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from watchlist_app.models import WatchList, StreamPlatform, Review
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlatformSerializer, ReviewSerializer
+from watchlist_app.api.permissions import AdminOrReadOnly
 
 
 class ReviewCreate(generics.CreateAPIView):
@@ -15,8 +16,6 @@ class ReviewCreate(generics.CreateAPIView):
 
     # 이것 이외에도 perform_update, perform_destroy도 존재함
     def perform_create(self, serializer):
-        print(self.request.user)
-
         pk = self.kwargs.get('pk')
         watchlist = WatchList.objects.get(pk=pk)
 
@@ -25,6 +24,12 @@ class ReviewCreate(generics.CreateAPIView):
 
         if review_queryset.exists():
             raise ValidationError('you have already reviewed this movie!')
+        
+        watchlist.number_rating += 1
+        # 여기에는 sum을 저장하고 serializer에서 avg를 보여주도록 하는 것이 좋지 않을까.
+        watchlist.avg_rate = (watchlist.avg_rate + self.request.data['rating']) / 2
+
+        watchlist.save()
 
         serializer.save(watchlist=watchlist, review_user=review_user)
 
@@ -40,6 +45,7 @@ class ReviewList(generics.ListAPIView):
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    permission_classes = [AdminOrReadOnly]
 
 class StreamPlatformVS(viewsets.ViewSet):
 
