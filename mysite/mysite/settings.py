@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-e3ly)*d(z($s#lu)986=jh1@#a@gnupyq*p3w(5w5@)l-i$m24'
+SECRET_KEY = 'django-insecure--p7%ogn+6a+zl)mofgs46qd^in7#8d&covy$8db#b3^qlu=s6y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,6 +74,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# TODO 튜토리얼이 끝난 이후에는 이 지점에서 코딩을 시작하는 것이 필요할 것 같다. 세팅들을 커스터마이징해가는 것이 필요할 것.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
